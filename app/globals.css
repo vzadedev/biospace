@@ -41,3 +41,10 @@ body {
 .animate-fade-in {
   animation: fade-in 0.4s ease-out forwards;
 }
+
+/* react-compare-slider — arraste no mobile (área inteira, não só o handle) */
+.compare-slider-root [class*="__rcs"] {
+  touch-action: none !important;
+  -webkit-user-select: none;
+  user-select: none;
+}

@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
+import { DataImage } from "@/components/DataImage";
 import { useEffect, useState } from "react";
 import { Share2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -56,13 +56,7 @@ export default function ProjectDetailPage() {
           />
         ) : (
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-md">
-            <Image
-              src={project.originalImage}
-              alt="Antes"
-              fill
-              className="object-cover"
-              unoptimized={project.originalImage.startsWith("data:")}
-            />
+            <DataImage src={project.originalImage} alt="Antes" fill />
           </div>
         )}
 

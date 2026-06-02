@@ -18,6 +18,14 @@ export interface SaveProjectResult {
   warning?: string;
 }
 
+async function safeCompress(dataUrl: string): Promise<string> {
+  try {
+    return await compressImageDataUrl(dataUrl);
+  } catch {
+    return dataUrl;
+  }
+}
+
 export async function saveCurrentProject(
   input: SaveCurrentProjectInput
 ): Promise<SaveProjectResult> {
@@ -27,12 +35,12 @@ export async function saveCurrentProject(
   const items = input.items ?? getDecorationItems(input.style, input.mood);
   const name = flow.projectName?.trim() || existing?.name || "Meu ambiente";
 
-  try {
-    const [originalImage, generatedImage] = await Promise.all([
-      compressImageDataUrl(input.originalImage),
-      compressImageDataUrl(input.generatedImage),
-    ]);
+  const [originalImage, generatedImage] = await Promise.all([
+    safeCompress(input.originalImage),
+    safeCompress(input.generatedImage),
+  ]);
 
+  try {
     saveProject({
       id,
       name,

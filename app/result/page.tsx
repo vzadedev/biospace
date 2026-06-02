@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { DataImage } from "@/components/DataImage";
 import { Check, Heart, Share2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { AiStatusBanner } from "@/components/AiStatusBanner";
@@ -210,18 +210,12 @@ export default function ResultPage() {
           />
         ) : (
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-md">
-            <Image
-              src={originalImage}
-              alt="Antes"
-              fill
-              className="object-cover"
-              unoptimized
-            />
+            <DataImage src={originalImage} alt="Antes" fill />
           </div>
         )}
 
         {activeTab === "after" && (
-          <p className="text-center text-xs text-gray-500">
+          <p className="text-center text-xs text-gray-500 md:block hidden">
             Arraste o controle para comparar antes e depois
           </p>
         )}

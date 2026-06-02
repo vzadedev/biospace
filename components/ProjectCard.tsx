@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { DataImage } from "@/components/DataImage";
 import type { Project } from "@/lib/types";
 import { formatRelativeTime } from "@/lib/storage";
 
@@ -18,13 +18,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
       className="flex gap-4 rounded-2xl bg-white p-3 shadow-sm border border-gray-100 transition-shadow hover:shadow-md"
     >
       <div className="relative h-20 w-24 shrink-0 overflow-hidden rounded-xl">
-        <Image
-          src={image}
-          alt={project.name}
-          fill
-          className="object-cover"
-          unoptimized={image.startsWith("data:")}
-        />
+        <DataImage src={image} alt={project.name} fill />
       </div>
       <div className="flex flex-col justify-center min-w-0">
         <h3 className="font-semibold text-charcoal truncate">{project.name}</h3>
