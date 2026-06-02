@@ -1,36 +1,117 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BioSpace AI
 
-## Getting Started
+Responsive web MVP for biophilic room redesign using AI. Built with Next.js (App Router), TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## Features
+
+- **Home** — Greeting, new project CTA, recent projects from `localStorage`
+- **Create project flow** — Upload photo → style → mood → AI generation
+- **Result** — Before/after slider, save & share
+- **Suggestions** — Mock plant recommendations
+- **Project items** — Shopping list with quantity controls
+- **Persistence** — Projects saved in `localStorage` (no auth, no database)
+
+## Getting started
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Optional: AI generation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Copy `.env.example` to `.env.local` and add your OpenAI API key:
 
-## Learn More
+```bash
+cp .env.example .env.local
+```
 
-To learn more about Next.js, take a look at the following resources:
+Set `GOOGLE_API_KEY` (Google AI Studio) or `OPENAI_API_KEY` in `.env.local`. Without a key, the app runs in demo mode (same photo as "after").
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy na Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Opção A — GitHub (recomendado)
 
-## Deploy on Vercel
+1. Crie um repositório no GitHub e envie o código:
+   ```bash
+   git add .
+   git commit -m "BioSpace AI MVP"
+   git remote add origin https://github.com/SEU_USUARIO/biospace.git
+   git push -u origin master
+   ```
+2. Acesse [vercel.com/new](https://vercel.com/new) e importe o repositório.
+3. Framework: **Next.js** (detectado automaticamente).
+4. Em **Environment Variables**, adicione:
+   - `GOOGLE_API_KEY` = sua chave do [Google AI Studio](https://aistudio.google.com/apikey)
+5. Clique em **Deploy**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Opção B — CLI
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm i -g vercel
+vercel login
+vercel
+```
+
+Na primeira vez, siga o assistente. Depois, para produção:
+
+```bash
+vercel --prod
+```
+
+Configure a variável de ambiente:
+
+```bash
+vercel env add GOOGLE_API_KEY
+```
+
+Escolha **Production**, cole a chave e faça redeploy (`vercel --prod`).
+
+### Notas
+
+- `.env.local` **não** sobe para a Vercel — use o painel ou `vercel env`.
+- A rota `/api/generate` usa `maxDuration = 60` (Gemini ~10–30s). No plano Hobby o limite pode ser 10s; se der timeout, use Pro ou otimize.
+- Fotos muito grandes no upload podem falhar (limite ~4,5 MB no body da função serverless).
+
+## Project structure
+
+```
+app/
+  page.tsx                 # Home
+  splash/page.tsx          # Splash screen (first visit)
+  project/new/page.tsx     # Step 1: Upload
+  project/preferences/     # Steps 2–3: Style & mood
+  result/page.tsx          # Before/after + save
+  project/[id]/page.tsx    # Saved project detail
+  projects/page.tsx        # All projects
+  suggestions/page.tsx     # Plant suggestions
+  items/page.tsx           # Shopping list
+  success/page.tsx         # Save confirmation
+  api/generate/route.ts    # AI generation API
+
+components/                # UI components
+lib/
+  storage.ts               # localStorage helpers
+  flow.ts                  # Session flow state
+  ai.ts                    # Client AI + prompt builder
+  constants.ts             # Styles, moods, mock data
+```
+
+## Tech stack
+
+- Next.js 16 (App Router)
+- TypeScript
+- Tailwind CSS v4
+- react-compare-slider
+- lucide-react
+
+## Scripts
+
+| Command        | Description          |
+|----------------|----------------------|
+| `npm run dev`  | Development server   |
+| `npm run build`| Production build     |
+| `npm start`    | Start production     |
+| `npm run lint` | ESLint               |
