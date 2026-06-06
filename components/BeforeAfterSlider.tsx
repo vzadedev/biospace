@@ -19,7 +19,13 @@ export function BeforeAfterSlider({
     >
       <ReactCompareSlider
         itemOne={<CompareImage src={beforeImage} alt="Antes" />}
-        itemTwo={<CompareImage src={afterImage} alt="Depois" />}
+        itemTwo={
+          <CompareImage
+            src={afterImage}
+            alt="Depois"
+            fallbackSrc={beforeImage}
+          />
+        }
         className="h-full w-full"
         onlyHandleDraggable={false}
         changePositionOnHover={false}

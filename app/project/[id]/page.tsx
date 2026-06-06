@@ -11,6 +11,7 @@ import { Button } from "@/components/Button";
 import { DecorationItemsList } from "@/components/DecorationItemsList";
 import { PageHeader } from "@/components/PageHeader";
 import { ensureProjectItems } from "@/lib/decoration-items";
+import { isValidImageDataUrl } from "@/lib/image-compress";
 import { STYLE_LABELS, MOOD_LABELS } from "@/lib/constants";
 import { useIsClient } from "@/hooks/useIsClient";
 import { useProject } from "@/hooks/useProject";
@@ -38,6 +39,12 @@ export default function ProjectDetailPage() {
   }
 
   const items = ensureProjectItems(project);
+  const afterImage = isValidImageDataUrl(project.generatedImage)
+    ? project.generatedImage
+    : project.originalImage;
+  const missingAfter =
+    isValidImageDataUrl(project.originalImage) &&
+    !isValidImageDataUrl(project.generatedImage);
 
   return (
     <AppShell>
@@ -48,11 +55,17 @@ export default function ProjectDetailPage() {
       </p>
 
       <div className="mt-4 space-y-4">
+        {missingAfter && (
+          <p className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-900">
+            A imagem &quot;depois&quot; não foi salva neste dispositivo. Gere o
+            projeto novamente para recuperar o resultado.
+          </p>
+        )}
         <BeforeAfterTabs active={activeTab} onChange={setActiveTab} />
         {activeTab === "after" ? (
           <BeforeAfterSlider
             beforeImage={project.originalImage}
-            afterImage={project.generatedImage}
+            afterImage={afterImage}
           />
         ) : (
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-md">

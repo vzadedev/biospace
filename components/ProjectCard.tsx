@@ -4,13 +4,18 @@ import Link from "next/link";
 import { DataImage } from "@/components/DataImage";
 import type { Project } from "@/lib/types";
 import { formatRelativeTime } from "@/lib/storage";
+import { isValidImageDataUrl } from "@/lib/image-compress";
 
 interface ProjectCardProps {
   project: Project;
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const image = project.generatedImage || project.originalImage;
+  const image =
+    (isValidImageDataUrl(project.generatedImage)
+      ? project.generatedImage
+      : null) ||
+    project.originalImage;
 
   return (
     <Link

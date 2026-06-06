@@ -1,5 +1,9 @@
 import { getDecorationItems } from "./decoration-items";
-import { compressImageDataUrl } from "./image-compress";
+import {
+  compressForStorage,
+  compressImageDataUrl,
+  isValidImageDataUrl,
+} from "./image-compress";
 import { getFlowData, setFlowData } from "./flow";
 import { getProjectById, saveProject } from "./storage";
 import type { DecorationItem, DecorationMood, DecorationStyle } from "./types";
@@ -18,12 +22,22 @@ export interface SaveProjectResult {
   warning?: string;
 }
 
-async function safeCompress(dataUrl: string): Promise<string> {
+async function safeCompressOriginal(dataUrl: string): Promise<string> {
   try {
-    return await compressImageDataUrl(dataUrl);
+    return await compressImageDataUrl(dataUrl, 1280, 0.82);
   } catch {
     return dataUrl;
   }
+}
+
+async function safeCompressGenerated(dataUrl: string): Promise<string> {
+  try {
+    const compressed = await compressForStorage(dataUrl);
+    if (isValidImageDataUrl(compressed)) return compressed;
+  } catch (error) {
+    console.warn("[saveCurrentProject] compress generated", error);
+  }
+  return dataUrl;
 }
 
 export async function saveCurrentProject(
@@ -36,16 +50,20 @@ export async function saveCurrentProject(
   const name = flow.projectName?.trim() || existing?.name || "Meu ambiente";
 
   const [originalImage, generatedImage] = await Promise.all([
-    safeCompress(input.originalImage),
-    safeCompress(input.generatedImage),
+    safeCompressOriginal(input.originalImage),
+    safeCompressGenerated(input.generatedImage),
   ]);
+
+  const storedGenerated = isValidImageDataUrl(generatedImage)
+    ? generatedImage
+    : originalImage;
 
   try {
     saveProject({
       id,
       name,
       originalImage,
-      generatedImage,
+      generatedImage: storedGenerated,
       style: input.style,
       mood: input.mood,
       items,
