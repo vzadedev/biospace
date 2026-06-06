@@ -47,6 +47,7 @@ export default function ResultPage() {
   const [activeTab, setActiveTab] = useState<"before" | "after">("after");
   const [saved, setSaved] = useState(false);
   const [favorited, setFavorited] = useState(false);
+  const [error, setError] = useState<string>();
 
   useEffect(() => {
     const runId = ++generationIdRef.current;
@@ -122,7 +123,12 @@ export default function ResultPage() {
       })
       .catch((err) => {
         console.error("[result]", err);
-        if (isActive()) router.replace("/project/new");
+        if (!isActive()) return;
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Não foi possível gerar o design. Tente novamente."
+        );
       })
       .finally(() => {
         clearInterval(messageInterval);
@@ -151,6 +157,20 @@ export default function ResultPage() {
 
   if (loading) {
     return <LoadingOverlay message={loadingMessage} />;
+  }
+
+  if (error) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center gap-4 py-16 text-center">
+          <p className="text-charcoal font-medium">Falha na geração</p>
+          <p className="text-sm text-gray-600 max-w-sm">{error}</p>
+          <Button variant="secondary" href="/project/new">
+            Tentar de novo
+          </Button>
+        </div>
+      </AppShell>
+    );
   }
 
   if (!originalImage || !generatedImage) {

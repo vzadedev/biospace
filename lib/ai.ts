@@ -1,5 +1,6 @@
 import type { DecorationItem, DecorationMood, DecorationStyle } from "./types";
 import { MOOD_LABELS, STYLE_LABELS } from "./constants";
+import { compressImageDataUrl } from "./image-compress";
 
 export type AiSource = "google" | "openai" | "demo";
 
@@ -23,14 +24,19 @@ export async function generateDesign(
   style: DecorationStyle,
   mood: DecorationMood
 ): Promise<GenerateDesignResult> {
+  const compressed = await compressImageDataUrl(imageBase64, 1024, 0.8);
+
   const response = await fetch("/api/generate", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ imageBase64, style, mood }),
+    body: JSON.stringify({ imageBase64: compressed, style, mood }),
   });
 
   if (!response.ok) {
-    throw new Error("Generation failed");
+    const err = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
+    throw new Error(err?.detail ?? "Generation failed");
   }
 
   const data = (await response.json()) as {

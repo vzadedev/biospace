@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { Camera } from "lucide-react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { compressImageDataUrl } from "@/lib/image-compress";
 
 interface ImageUploadProps {
   preview: string | null;
@@ -11,14 +12,22 @@ interface ImageUploadProps {
 
 export function ImageUpload({ preview, onImageSelect }: ImageUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleFile = (file: File) => {
+    setLoading(true);
     const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        onImageSelect(reader.result);
+    reader.onload = async () => {
+      try {
+        if (typeof reader.result === "string") {
+          const compressed = await compressImageDataUrl(reader.result, 1280, 0.82);
+          onImageSelect(compressed);
+        }
+      } finally {
+        setLoading(false);
       }
     };
+    reader.onerror = () => setLoading(false);
     reader.readAsDataURL(file);
   };
 
@@ -45,7 +54,9 @@ export function ImageUpload({ preview, onImageSelect }: ImageUploadProps) {
               <Camera className="h-7 w-7 text-forest" />
             </div>
             <p className="text-sm font-medium text-charcoal">
-              Tire uma foto do ambiente ou escolha da galeria
+              {loading
+                ? "Preparando imagem..."
+                : "Tire uma foto do ambiente ou escolha da galeria"}
             </p>
           </div>
         )}

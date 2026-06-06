@@ -22,7 +22,8 @@ const VALID_MOODS: DecorationMood[] = [
   "natureza",
 ];
 
-/** Geração com Gemini pode levar ~15–30s — ajuste no plano Vercel se necessário */
+/** Edge: até ~30s no Hobby; serverless Node no Hobby estoura em ~10s */
+export const runtime = "edge";
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
@@ -55,9 +56,12 @@ export async function POST(request: NextRequest) {
 
     let imageUrl: string | null = null;
     let source: "google" | "openai" | "demo" = "demo";
+    let apiError: string | undefined;
 
     if (provider === "google" && apiKey) {
-      imageUrl = await generateWithGoogle(apiKey, imageBase64, prompt);
+      const result = await generateWithGoogle(apiKey, imageBase64, prompt);
+      imageUrl = result.imageUrl;
+      apiError = result.error;
       if (imageUrl) source = "google";
     } else if (provider === "openai" && apiKey) {
       imageUrl = await generateWithOpenAI(apiKey, imageBase64, prompt);
@@ -84,11 +88,16 @@ export async function POST(request: NextRequest) {
       message:
         provider === "none"
           ? "Configure GOOGLE_API_KEY ou OPENAI_API_KEY no .env.local"
-          : "A API de imagens falhou — exibindo seu ambiente original (modo demonstração).",
+          : apiError
+            ? `A API de imagens falhou (${apiError}). Exibindo seu ambiente original.`
+            : "A API de imagens falhou — exibindo seu ambiente original (modo demonstração).",
     });
-  } catch {
+  } catch (error) {
+    const detail =
+      error instanceof Error ? error.message : "erro desconhecido";
+    console.error("[api/generate]", error);
     return NextResponse.json(
-      { error: "Generation failed" },
+      { error: "Generation failed", detail },
       { status: 500 }
     );
   }

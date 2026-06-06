@@ -18,7 +18,7 @@ export async function generateWithGoogle(
   apiKey: string,
   imageBase64: string,
   prompt: string
-): Promise<string | null> {
+): Promise<{ imageUrl: string | null; error?: string }> {
   const { mimeType, data } = parseBase64Image(imageBase64);
 
   const body = {
@@ -42,6 +42,8 @@ export async function generateWithGoogle(
     },
   };
 
+  let lastError = "";
+
   for (const model of MODELS) {
     try {
       const response = await fetch(
@@ -55,6 +57,7 @@ export async function generateWithGoogle(
 
       if (!response.ok) {
         const errText = await response.text();
+        lastError = `[${model}] ${response.status}: ${errText.slice(0, 200)}`;
         console.error(`[Gemini ${model}]`, response.status, errText.slice(0, 300));
         continue;
       }
@@ -78,13 +81,16 @@ export async function generateWithGoogle(
             part.inlineData?.mimeType ??
             part.inline_data?.mime_type ??
             "image/png";
-          return `data:${outMime};base64,${inline.data}`;
+          return { imageUrl: `data:${outMime};base64,${inline.data}` };
         }
       }
+
+      lastError = `[${model}] resposta sem imagem`;
     } catch (error) {
+      lastError = `[${model}] ${error instanceof Error ? error.message : "erro de rede"}`;
       console.error(`[Gemini ${model}]`, error);
     }
   }
 
-  return null;
+  return { imageUrl: null, error: lastError || "nenhum modelo retornou imagem" };
 }
